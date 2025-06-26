@@ -1,0 +1,20 @@
+{
+  "fd28932c-f4f5-4e7c-806b-04ffd7412fc1": {
+    "username": "testuser123",
+    "email": "test123@example.com",
+    "password_hash": "7e6e0c3079a08c5cc6036789b57e951f65f82383913ba1a49ae992544f1b4b6e",
+    "created_at": "2025-06-26T18:16:03.356469"
+  },
+  "7e91ead7-e4a5-4808-ae55-087ba6bd69f3": {
+    "username": "abcd",
+    "email": "priyanshumadhup05@gmail.com",
+    "password_hash": "959e124c7187cbedf4dac46873101167f95f6441d2539982872524f4006541b0",
+    "created_at": "2025-06-26T18:17:54.138227"
+  },
+  "89528072-7ef2-4ad2-9497-6c3fe8cf5a13": {
+    "username": "efgh",
+    "email": "efg@gmail.com",
+    "password_hash": "7c1775dc287f440113cafe5ec1d7b2995203fbe51510d220d33d620cc6566bc9",
+    "created_at": "2025-06-26T18:35:40.313107"
+  }
+}

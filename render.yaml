@@ -1,0 +1,33 @@
+services:
+  # Backend API service
+  - type: web
+    name: yota-chatbot-backend
+    runtime: python3
+    buildCommand: "pip install -r backend/requirements.txt"
+    startCommand: "cd backend && python main.py"
+    plan: free
+    envVars:
+      - key: GROQ_API_KEY
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: JWT_SECRET_KEY
+        sync: false
+      - key: SERPER_API_KEY
+        value: "67c090a334109db4480037614dbb1c635f29ad83"
+      - key: PORT
+        value: 8000
+    healthCheckPath: /health
+    
+  # Frontend React service (Static Site)
+  - type: static
+    name: yota-chatbot-frontend
+    buildCommand: "cd frontend && npm install && npm run build"
+    staticPublishPath: "./frontend/build"
+    plan: free
+    envVars:
+      - key: REACT_APP_API_URL
+        fromService:
+          type: web
+          name: yota-chatbot-backend
+          property: hostport

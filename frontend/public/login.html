@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yota AI Assistant - Login</title>
+    <link rel="icon" href="yota_logo.png" type="image/png">
+    <style>
+        /* Login Page Styles - Matching Yota App Theme */
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+        }
+
+        .login-container {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #1a1a1a;
+            overflow: hidden;
+        }
+
+        .login-background {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #1a1a1a 0%, #171717 50%, #1a1a1a 100%);
+            overflow: hidden;
+        }
+
+        /* Animated background elements */
+        .login-background::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(102, 126, 234, 0.1) 0%, transparent 70%);
+            animation: rotate 20s linear infinite;
+            z-index: 1;
+        }
+
+        .login-background::after {
+            content: '';
+            position: absolute;
+            top: 20%;
+            right: 10%;
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, rgba(102, 126, 234, 0.05) 0%, transparent 70%);
+            border-radius: 50%;
+            animation: float 8s ease-in-out infinite;
+            z-index: 1;
+        }
+
+        /* Floating Yota AI Text Background */
+        .login-floating-text {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 2;
+            overflow: hidden;
+        }
+
+        .floating-yota-main {
+            position: absolute;
+            top: 15%;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: clamp(80px, 12vw, 150px);
+            font-weight: 900;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            opacity: 0.15;
+            white-space: nowrap;
+            animation: floatUpMain 8s ease-in-out infinite;
+            text-shadow: 0 0 60px rgba(102, 126, 234, 0.3);
+            letter-spacing: 8px;
+        }
+
+        .floating-yota-secondary {
+            position: absolute;
+            top: 70%;
+            right: 10%;
+            transform: rotate(-15deg);
+            font-size: clamp(40px, 6vw, 80px);
+            font-weight: 700;
+            background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            opacity: 0.08;
+            animation: floatUpSecondary 12s ease-in-out infinite;
+            letter-spacing: 4px;
+        }
+
+        .floating-message-1 {
+            position: absolute;
+            top: 25%;
+            left: 15%;
+            font-size: clamp(20px, 3vw, 35px);
+            font-weight: 600;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            opacity: 0.12;
+            animation: riseUp1 10s ease-in-out infinite;
+            transform: rotate(-8deg);
+        }
+
+        .floating-message-2 {
+            position: absolute;
+            bottom: 30%;
+            left: 8%;
+            font-size: clamp(18px, 2.5vw, 30px);
+            font-weight: 500;
+            background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            opacity: 0.1;
+            animation: riseUp2 14s ease-in-out infinite;
+            transform: rotate(5deg);
+        }
+
+        .floating-message-3 {
+            position: absolute;
+            top: 40%;
+            right: 8%;
+            font-size: clamp(16px, 2vw, 28px);
+            font-weight: 600;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            opacity: 0.09;
+            animation: riseUp3 11s ease-in-out infinite;
+            transform: rotate(12deg);
+        }
+
+        /* Floating animations */
+        @keyframes floatUpMain {
+            0%, 100% { 
+                transform: translateX(-50%) translateY(0px) scale(1);
+                opacity: 0.15;
+            }
+            25% { 
+                transform: translateX(-50%) translateY(-20px) scale(1.02);
+                opacity: 0.18;
+            }
+            50% { 
+                transform: translateX(-50%) translateY(-10px) scale(1.01);
+                opacity: 0.20;
+            }
+            75% { 
+                transform: translateX(-50%) translateY(-25px) scale(1.03);
+                opacity: 0.16;
+            }
+        }
+
+        @keyframes floatUpSecondary {
+            0%, 100% { 
+                transform: rotate(-15deg) translateY(0px) scale(1);
+                opacity: 0.08;
+            }
+            30% { 
+                transform: rotate(-12deg) translateY(-15px) scale(1.05);
+                opacity: 0.12;
+            }
+            60% { 
+                transform: rotate(-18deg) translateY(-8px) scale(0.98);
+                opacity: 0.10;
+            }
+        }
+
+        @keyframes riseUp1 {
+            0%, 100% { 
+                transform: rotate(-8deg) translateY(0px);
+                opacity: 0.12;
+            }
+            40% { 
+                transform: rotate(-5deg) translateY(-30px);
+                opacity: 0.16;
+            }
+            70% { 
+                transform: rotate(-10deg) translateY(-15px);
+                opacity: 0.14;
+            }
+        }
+
+        @keyframes riseUp2 {
+            0%, 100% { 
+                transform: rotate(5deg) translateY(0px);
+                opacity: 0.10;
+            }
+            35% { 
+                transform: rotate(8deg) translateY(-25px);
+                opacity: 0.14;
+            }
+            65% { 
+                transform: rotate(2deg) translateY(-12px);
+                opacity: 0.12;
+            }
+        }
+
+        @keyframes riseUp3 {
+            0%, 100% { 
+                transform: rotate(12deg) translateY(0px);
+                opacity: 0.09;
+            }
+            45% { 
+                transform: rotate(15deg) translateY(-20px);
+                opacity: 0.13;
+            }
+            75% { 
+                transform: rotate(9deg) translateY(-10px);
+                opacity: 0.11;
+            }
+        }
+
+        @keyframes rotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) scale(1); }
+            50% { transform: translateY(-20px) scale(1.05); }
+        }
+
+        /* Login Card */
+        .login-card {
+            position: relative;
+            z-index: 15;
+            background: rgba(23, 23, 23, 0.95);
+            border: 1px solid #2d2d2d;
+            border-radius: 16px;
+            padding: 40px;
+            width: 100%;
+            max-width: 420px;
+            backdrop-filter: blur(15px);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(102, 126, 234, 0.1);
+            animation: slideUp 0.8s ease-out;
+        }
+
+        @keyframes slideUp {
+            0% {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Header */
+        .login-header {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .login-yota-logo {
+            width: 80px;
+            height: 80px;
+            object-fit: contain;
+            filter: brightness(1.2) drop-shadow(0 0 15px rgba(102, 126, 234, 0.4));
+            animation: logoFloat 6s ease-in-out infinite;
+            margin-bottom: 16px;
+        }
+
+        @keyframes logoFloat {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            25% { transform: translateY(-8px) rotate(1deg); }
+            50% { transform: translateY(0px) rotate(0deg); }
+            75% { transform: translateY(-4px) rotate(-1deg); }
+        }
+
+        .login-header h1 {
+            color: #ffffff;
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .login-header p {
+            color: #888;
+            font-size: 16px;
+            font-weight: 400;
+        }
+
+        /* Form Styles */
+        .login-form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .input-group label {
+            color: #ffffff;
+            font-size: 14px;
+            font-weight: 500;
+            margin-left: 4px;
+        }
+
+        .input-container {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 16px;
+            color: #888;
+            z-index: 2;
+            pointer-events: none;
+        }
+
+        .input-container input {
+            width: 100%;
+            padding: 16px 16px 16px 48px;
+            background-color: #2d2d2d;
+            border: 1px solid #404040;
+            border-radius: 12px;
+            color: #ffffff;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            outline: none;
+        }
+
+        .input-container input:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            background-color: #333333;
+        }
+
+        .input-container input::placeholder {
+            color: #666;
+        }
+
+        /* Password Toggle Button */
+        .password-toggle {
+            position: absolute;
+            right: 16px;
+            background: none;
+            border: none;
+            color: #888;
+            cursor: pointer;
+            padding: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+        }
+
+        .password-toggle:hover {
+            color: #667eea;
+            background-color: rgba(102, 126, 234, 0.1);
+        }
+
+        /* Submit Button */
+        .login-submit-btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 12px;
+            color: #ffffff;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .login-submit-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .login-submit-btn:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
+        .login-submit-btn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Footer */
+        .login-footer {
+            margin-top: 24px;
+            text-align: center;
+        }
+
+        .login-footer p {
+            color: #888;
+            font-size: 14px;
+        }
+
+        .toggle-mode-btn {
+            background: none;
+            border: none;
+            color: #667eea;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-left: 8px;
+            padding: 4px 8px;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+        }
+
+        .toggle-mode-btn:hover {
+            background-color: rgba(102, 126, 234, 0.1);
+            color: #7c8ef0;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 480px) {
+            .login-card {
+                margin: 20px;
+                padding: 32px 24px;
+                max-width: none;
+                width: calc(100% - 40px);
+            }
+            
+            .login-header h1 {
+                font-size: 24px;
+            }
+            
+            .login-yota-logo {
+                width: 70px;
+                height: 70px;
+            }
+            
+            .input-container input {
+                padding: 14px 14px 14px 44px;
+                font-size: 16px;
+            }
+            
+            .login-submit-btn {
+                padding: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-background">
+            <!-- Floating Yota AI Text Background -->
+            <div class="login-floating-text">
+                <div class="floating-yota-main">YOTA AI</div>
+                <div class="floating-yota-secondary">AI Assistant</div>
+                <div class="floating-message-1">Intelligent Conversations</div>
+                <div class="floating-message-2">Future of AI Chat</div>
+                <div class="floating-message-3">Powered by Intelligence</div>
+            </div>
+
+            <div class="login-card">
+                <!-- Header with Yota Logo -->
+                <div class="login-header">
+                    <img src="yota_logo.png" alt="Yota Logo" class="login-yota-logo" />
+                    <h1>Yota AI Assistant</h1>
+                    <p id="headerText">Welcome back!</p>
+                </div>
+
+                <!-- Login/Signup Form -->
+                <form id="loginForm" class="login-form">
+                    <!-- Username Field -->
+                    <div class="input-group">
+                        <label for="username">Username</label>
+                        <div class="input-container">
+                            <svg class="input-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                                <circle cx="12" cy="7" r="4"/>
+                            </svg>
+                            <input
+                                type="text"
+                                id="username"
+                                name="username"
+                                placeholder="Enter your username"
+                                required
+                            />
+                        </div>
+                    </div>
+
+                    <!-- Email Field (hidden by default) -->
+                    <div class="input-group hidden" id="emailGroup">
+                        <label for="email">Email</label>
+                        <div class="input-container">
+                            <svg class="input-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                                <polyline points="22,6 12,13 2,6"/>
+                            </svg>
+                            <input
+                                type="email"
+                                id="email"
+                                name="email"
+                                placeholder="Enter your email"
+                            />
+                        </div>
+                    </div>
+
+                    <!-- Password Field -->
+                    <div class="input-group">
+                        <label for="password">Password</label>
+                        <div class="input-container">
+                            <svg class="input-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                                <circle cx="12" cy="16" r="1"/>
+                                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                            </svg>
+                            <input
+                                type="password"
+                                id="password"
+                                name="password"
+                                placeholder="Enter your password"
+                                required
+                            />
+                            <button type="button" class="password-toggle" onclick="togglePassword('password')">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                    <circle cx="12" cy="12" r="3"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Confirm Password Field (hidden by default) -->
+                    <div class="input-group hidden" id="confirmPasswordGroup">
+                        <label for="confirmPassword">Confirm Password</label>
+                        <div class="input-container">
+                            <svg class="input-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                                <circle cx="12" cy="16" r="1"/>
+                                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                            </svg>
+                            <input
+                                type="password"
+                                id="confirmPassword"
+                                name="confirmPassword"
+                                placeholder="Confirm your password"
+                            />
+                            <button type="button" class="password-toggle" onclick="togglePassword('confirmPassword')">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                    <circle cx="12" cy="12" r="3"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <button type="submit" class="login-submit-btn" id="submitBtn">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/>
+                        </svg>
+                        <span id="submitText">Sign In</span>
+                    </button>
+                </form>
+
+                <!-- Toggle Login/Signup -->
+                <div class="login-footer">
+                    <p>
+                        <span id="footerText">Don't have an account?</span>
+                        <button type="button" class="toggle-mode-btn" id="toggleBtn" onclick="toggleMode()">
+                            Sign Up
+                        </button>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let isLogin = true;
+
+        function toggleMode() {
+            isLogin = !isLogin;
+            
+            const headerText = document.getElementById('headerText');
+            const emailGroup = document.getElementById('emailGroup');
+            const confirmPasswordGroup = document.getElementById('confirmPasswordGroup');
+            const submitText = document.getElementById('submitText');
+            const footerText = document.getElementById('footerText');
+            const toggleBtn = document.getElementById('toggleBtn');
+            const emailInput = document.getElementById('email');
+            const confirmPasswordInput = document.getElementById('confirmPassword');
+
+            if (isLogin) {
+                // Switch to login mode
+                headerText.textContent = 'Welcome back!';
+                emailGroup.classList.add('hidden');
+                confirmPasswordGroup.classList.add('hidden');
+                submitText.textContent = 'Sign In';
+                footerText.textContent = "Don't have an account?";
+                toggleBtn.textContent = 'Sign Up';
+                emailInput.removeAttribute('required');
+                confirmPasswordInput.removeAttribute('required');
+            } else {
+                // Switch to signup mode
+                headerText.textContent = 'Join the future of AI conversation';
+                emailGroup.classList.remove('hidden');
+                confirmPasswordGroup.classList.remove('hidden');
+                submitText.textContent = 'Create Account';
+                footerText.textContent = 'Already have an account?';
+                toggleBtn.textContent = 'Sign In';
+                emailInput.setAttribute('required', '');
+                confirmPasswordInput.setAttribute('required', '');
+            }
+
+            // Clear form
+            document.getElementById('loginForm').reset();
+        }
+
+        function togglePassword(fieldId) {
+            const input = document.getElementById(fieldId);
+            const button = input.parentNode.querySelector('.password-toggle');
+            const svg = button.querySelector('svg');
+            
+            if (input.type === 'password') {
+                input.type = 'text';
+                svg.innerHTML = `
+                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+                    <line x1="1" y1="1" x2="23" y2="23"/>
+                `;
+            } else {
+                input.type = 'password';
+                svg.innerHTML = `
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                    <circle cx="12" cy="12" r="3"/>
+                `;
+            }
+        }
+
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value;
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+
+            // Basic validation
+            if (!username || !password) {
+                alert('Please fill in all required fields');
+                return;
+            }
+
+            if (!isLogin) {
+                if (!email) {
+                    alert('Please enter your email');
+                    return;
+                }
+                if (password !== confirmPassword) {
+                    alert('Passwords do not match');
+                    return;
+                }
+                if (password.length < 6) {
+                    alert('Password must be at least 6 characters long');
+                    return;
+                }
+            }
+
+            // Simulate form submission
+            alert(isLogin ? 'Login functionality will be implemented with backend!' : 'Signup functionality will be implemented with backend!');
+        });
+    </script>
+</body>
+</html>
