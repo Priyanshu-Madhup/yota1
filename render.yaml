@@ -2,7 +2,7 @@ services:
   # Backend API service
   - type: web
     name: yota-chatbot-backend
-    runtime: python3
+    env: python
     buildCommand: "pip install -r backend/requirements.txt"
     startCommand: "cd backend && python main.py"
     plan: free
@@ -20,9 +20,8 @@ services:
     healthCheckPath: /health
     
   # Frontend React service (Static Site)
-  - type: web
+  - type: static
     name: yota-chatbot-frontend
-    runtime: static
     buildCommand: "cd frontend && npm install && npm run build"
     staticPublishPath: "./frontend/build"
     plan: free
