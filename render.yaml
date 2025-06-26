@@ -20,8 +20,9 @@ services:
     healthCheckPath: /health
     
   # Frontend React service (Static Site)
-  - type: static
+  - type: web
     name: yota-chatbot-frontend
+    runtime: static
     buildCommand: "cd frontend && npm install && npm run build"
     staticPublishPath: "./frontend/build"
     plan: free
