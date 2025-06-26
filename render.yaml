@@ -18,16 +18,3 @@ services:
       - key: PORT
         value: 8000
     healthCheckPath: /health
-    
-  # Frontend React service (Static Site)
-  - type: static
-    name: yota-chatbot-frontend
-    buildCommand: "cd frontend && npm install && npm run build"
-    staticPublishPath: "./frontend/build"
-    plan: free
-    envVars:
-      - key: REACT_APP_API_URL
-        fromService:
-          type: web
-          name: yota-chatbot-backend
-          property: hostport
