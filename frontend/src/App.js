@@ -5,7 +5,7 @@ import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import './App.css';
 
-const API_BASE_URL = 'http://localhost:8000';
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
 
 // Utility function to convert HTML back to markdown-like format
 const htmlToMarkdown = (html) => {
@@ -220,7 +220,7 @@ function App() {
   useEffect(() => {
     const loadChatHistory = async () => {
       try {
-        const response = await fetch('http://localhost:8000/chat-history');
+        const response = await fetch(`${API_BASE_URL}/chat-history`);
         if (response.ok) {
           const data = await response.json();
           setChatHistory(data.chats);
@@ -244,7 +244,7 @@ function App() {
       if (messages.length > 0 && currentChatId) {
         try {
           const chatTitle = generateChatTitle(messages.find(m => m.role === 'user')?.content || 'New Chat');
-          await fetch('http://localhost:8000/save-chat', {
+          await fetch(`${API_BASE_URL}/save-chat`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -278,7 +278,7 @@ function App() {
     if (messages.length > 0 && currentChatId) {
       try {
         const chatTitle = generateChatTitle(messages.find(m => m.role === 'user')?.content || 'New Chat');
-        await fetch('http://localhost:8000/save-chat', {
+        await fetch(`${API_BASE_URL}/save-chat`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -291,7 +291,7 @@ function App() {
         });
         
         // Refresh chat history
-        const response = await fetch('http://localhost:8000/chat-history');
+        const response = await fetch(`${API_BASE_URL}/chat-history`);
         if (response.ok) {
           const data = await response.json();
           setChatHistory(data.chats);
@@ -320,7 +320,7 @@ function App() {
 
   const loadChat = async (chat) => {
     try {
-      const response = await fetch('http://localhost:8000/load-chat', {
+      const response = await fetch(`${API_BASE_URL}/load-chat`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -350,7 +350,7 @@ function App() {
 
   const deleteChat = async (chatId) => {
     try {
-      const response = await fetch(`http://localhost:8000/delete-chat/${chatId}`, {
+      const response = await fetch(`${API_BASE_URL}/delete-chat/${chatId}`, {
         method: 'DELETE',
       });
       
@@ -566,7 +566,7 @@ function App() {
       if (finalMessages.length >= 2 && currentChatId) {
         try {
           const chatTitle = generateChatTitle(finalMessages.find(m => m.role === 'user')?.content || 'New Chat');
-          await fetch('http://localhost:8000/save-chat', {
+          await fetch(`${API_BASE_URL}/save-chat`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -579,7 +579,7 @@ function App() {
           });
           
           // Refresh chat history to show the new chat immediately
-          const historyResponse = await fetch('http://localhost:8000/chat-history');
+          const historyResponse = await fetch(`${API_BASE_URL}/chat-history`);
           if (historyResponse.ok) {
             const data = await historyResponse.json();
             setChatHistory(data.chats);
@@ -608,7 +608,7 @@ function App() {
       if (finalMessages.length >= 2 && currentChatId) {
         try {
           const chatTitle = generateChatTitle(finalMessages.find(m => m.role === 'user')?.content || 'New Chat');
-          await fetch('http://localhost:8000/save-chat', {
+          await fetch(`${API_BASE_URL}/save-chat`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -621,7 +621,7 @@ function App() {
           });
           
           // Refresh chat history
-          const historyResponse = await fetch('http://localhost:8000/chat-history');
+          const historyResponse = await fetch(`${API_BASE_URL}/chat-history`);
           if (historyResponse.ok) {
             const data = await historyResponse.json();
             setChatHistory(data.chats);
