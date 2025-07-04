@@ -17,6 +17,4 @@ services:
         sync: false
       - key: SERPER_API_KEY
         value: "67c090a334109db4480037614dbb1c635f29ad83"
-      - key: PORT
-        value: 8000
     healthCheckPath: /health
