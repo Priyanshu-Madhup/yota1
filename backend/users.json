@@ -16,5 +16,11 @@
     "email": "efg@gmail.com",
     "password_hash": "7c1775dc287f440113cafe5ec1d7b2995203fbe51510d220d33d620cc6566bc9",
     "created_at": "2025-06-26T18:35:40.313107"
+  },
+  "8dbcb689-520a-4e24-a9de-9f5d71d4d6c3": {
+    "username": "Priyanshu",
+    "email": "priyanshumadhup@gmail.com",
+    "password_hash": "4b30d45efd64547380b5cf353d26f191b1a291971fe6ec904fc3d13354b45630",
+    "created_at": "2025-06-26T21:02:02.312969"
   }
 }

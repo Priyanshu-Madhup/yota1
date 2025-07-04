@@ -371,6 +371,9 @@
   line-height: 1.5;
   word-wrap: break-word;
   border: 1px solid #3a3a3a;
+  min-width: 0; /* Allow shrinking below content size */
+  overflow: hidden; /* Prevent overflow */
+  box-sizing: border-box; /* Include padding in width calculation */
 }
 
 .message.user .message-content {
@@ -393,6 +396,7 @@
 /* HTML Content Styling within Messages */
 .message-text {
   line-height: 1.6;
+  min-width: 0; /* Allow shrinking below content size */
 }
 
 .message-text h2 {
@@ -459,8 +463,12 @@
   border-radius: 8px;
   padding: 16px;
   margin: 12px 0;
-  overflow-x: auto;
+  overflow-x: hidden;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
   position: relative;
+  max-width: 100%;
+  box-sizing: border-box; /* Include padding in width calculation */
 }
 
 .message-text code {
@@ -488,9 +496,9 @@
   border: none;
   color: #f8f8f2;
   font-size: 0.85em;
-  white-space: pre;
-  word-wrap: normal;
-  overflow-wrap: normal;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 /* Copy button for code blocks */
@@ -735,12 +743,14 @@
   background-color: #2d2d2d;
   border-radius: 12px;
   overflow: hidden;
-  max-width: 200px;
+  max-width: 150px;
+  max-height: 150px;
 }
 
 .image-preview img {
   width: 100%;
-  height: auto;
+  height: 100%;
+  object-fit: cover;
   display: block;
 }
 
@@ -765,6 +775,47 @@
   background-color: rgba(255, 0, 0, 0.7);
 }
 
+/* Video Preview Styles */
+.video-preview {
+  margin: 16px 20px 0;
+  position: relative;
+  display: inline-block;
+  background-color: #2d2d2d;
+  border-radius: 12px;
+  overflow: hidden;
+  max-width: 150px;
+  max-height: 150px;
+}
+
+.video-preview video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  border-radius: 8px;
+}
+
+.remove-video-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background-color: rgba(0, 0, 0, 0.7);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.remove-video-btn:hover {
+  background-color: rgba(255, 0, 0, 0.7);
+}
+
 /* Message Image Styles */
 .message-image {
   margin-bottom: 8px;
@@ -772,17 +823,79 @@
 
 .message-image img {
   max-width: 300px;
-  max-height: 300px;
+  height: auto;
   border-radius: 8px;
-  object-fit: cover;
+  display: block;
 }
 
-.message.user .message-image img {
-  border: 2px solid rgba(255, 255, 255, 0.2);
+/* Message Video Styles */
+.message-video {
+  margin-bottom: 8px;
 }
 
-.message.assistant .message-image img {
-  border: 2px solid rgba(255, 255, 255, 0.1);
+.message-video video {
+  max-width: 300px;
+  height: auto;
+  border-radius: 8px;
+  display: block;
+}
+
+/* Image Editing Styles */
+.image-editing-section {
+  margin: 16px 20px 0;
+  padding: 16px;
+  background-color: #2d2d2d;
+  border-radius: 12px;
+  border: 2px dashed #667eea;
+  transition: all 0.3s ease;
+}
+
+.editing-controls {
+  margin-bottom: 12px;
+}
+
+.edit-image-upload-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background-color: #667eea;
+  color: white;
+  padding: 10px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  border: none;
+}
+
+.edit-image-upload-btn:hover {
+  background-color: #5a6fd8;
+  transform: translateY(-1px);
+}
+
+.editing-image-preview {
+  position: relative;
+  display: inline-block;
+  background-color: #3a3a3a;
+  border-radius: 8px;
+  overflow: hidden;
+  max-width: 250px;
+  margin-top: 8px;
+}
+
+.editing-image-preview img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.editing-image-preview .remove-image-btn {
+  background-color: rgba(255, 69, 0, 0.8);
+}
+
+.editing-image-preview .remove-image-btn:hover {
+  background-color: rgba(255, 0, 0, 0.9);
 }
 
 /* Code Block Styles */
@@ -795,6 +908,7 @@
   overflow-x: auto;
   position: relative;
   font-family: 'Courier New', Consolas, Monaco, monospace;
+  box-sizing: border-box; /* Include padding in width calculation */
 }
 
 .message-text code {
@@ -828,23 +942,22 @@
   right: 8px;
   background-color: #2a2a2a;
   border: 1px solid #4a4a4a;
-  color: #ffffff;
+  color: #f0f6fc;
   padding: 4px 8px;
   border-radius: 4px;
-  font-size: 12px;
+  font-size: 11px;
   cursor: pointer;
   transition: all 0.2s ease;
-  z-index: 10;
 }
 
 .copy-btn:hover {
   background-color: #3a3a3a;
-  border-color: #5a5a5a;
+  border-color: #8b949e;
 }
 
 .copy-btn:active {
-  background-color: #0084ff;
-  border-color: #0084ff;
+  background-color: #0969da;
+  border-color: #1f6feb;
 }
 
 /* Overlay for mobile sidebar */
@@ -957,7 +1070,7 @@
   }
   
   .message {
-    max-width: 85%;
+    max-width: 90%;
   }
   
   .messages-container {
@@ -1139,110 +1252,130 @@
   border-bottom-color: #66b3ff;
 }
 
-.message-text .inline-code {
-  background-color: rgba(255, 255, 255, 0.1);
-  color: #f97583;
-  padding: 2px 6px;
-  border-radius: 4px;
-  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
-  font-size: 0.9em;
+.message-content {
+  min-width: 0; /* Allow shrinking below content size */
+  overflow: hidden; /* Prevent overflow */
 }
 
-/* User message markdown styling */
-.message.user .message-text .markdown-h1,
-.message.user .message-text .markdown-h2,
-.message.user .message-text .markdown-h3,
-.message.user .message-text .markdown-h4,
-.message.user .message-text .markdown-p,
-.message.user .message-text .markdown-li {
+/* Ensure code blocks stay within message boundaries */
+.message-content .message-text {
+  min-width: 0; /* Allow shrinking below content size */
+}
+
+.message-content .message-text pre {
+  box-sizing: border-box; /* Include padding in width calculation */
+}
+
+/* Responsive design for smaller screens */
+@media (max-width: 768px) {
+  .message {
+    max-width: 90%;
+  }
+  
+  .message-content {
+    padding: 12px 16px;
+  }
+  
+  .message-text pre {
+    padding: 12px;
+    font-size: 0.8em;
+  }
+}
+
+/* HTML content styling for web search results and other HTML content */
+.html-content {
+  line-height: 1.6;
+  word-wrap: break-word;
+  max-width: 100%;
+  overflow-wrap: break-word;
+}
+
+.html-content h3 {
   color: #ffffff;
+  margin: 16px 0 12px 0;
+  font-size: 1.1em;
+  font-weight: 600;
 }
 
-.message.user .message-text .markdown-h2 {
-  border-bottom-color: rgba(255, 255, 255, 0.3);
-}
-
-.message.user .message-text .inline-code {
-  background-color: rgba(255, 255, 255, 0.2);
-  color: #ffeb3b;
-}
-
-/* Assistant message markdown styling */
-.message.assistant .message-text .markdown-h1 {
-  color: #ffffff;
-  border-bottom-color: rgba(255, 255, 255, 0.15);
-}
-
-.message.assistant .message-text .markdown-h2 {
-  color: #ffffff;
-  border-bottom-color: rgba(255, 255, 255, 0.12);
-}
-
-.message.assistant .message-text .markdown-h3,
-.message.assistant .message-text .markdown-h4 {
-  color: #e8e8e8;
-}
-
-.message.assistant .message-text .markdown-link {
-  color: #5ba7f7;
-}
-
-.message.assistant .message-text .markdown-link:hover {
-  color: #7bb8f8;
-}
-
-/* User Info Section in Sidebar */
-.user-info {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 12px;
-  padding: 8px;
-  background: rgba(45, 45, 45, 0.3);
-  border-radius: 8px;
-}
-
-.user-name {
-  color: #888;
-  font-size: 12px;
+.html-content h4 {
+  color: #e0e0e0;
+  margin: 12px 0 8px 0;
+  font-size: 1em;
   font-weight: 500;
 }
 
-/* Logout Button */
-.logout-btn {
-  background: transparent;
-  color: #ff6b6b;
-  border: 1px solid rgba(255, 107, 107, 0.3);
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 11px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 4px;
+.html-content p {
+  margin: 8px 0;
+  line-height: 1.5;
+  color: #cccccc;
+}
+
+.html-content a {
+  color: #4a9eff !important;
+  text-decoration: none !important;
+  border-bottom: 1px solid transparent;
   transition: all 0.2s ease;
+  cursor: pointer !important;
+  display: inline !important;
 }
 
-.logout-btn:hover {
-  background: rgba(255, 107, 107, 0.1);
-  border-color: #ff6b6b;
-  color: #ff8a8a;
+.html-content a:hover {
+  color: #66b3ff !important;
+  border-bottom-color: #66b3ff;
+  text-decoration: underline !important;
 }
 
-/* Loading Screen Styles */
-.loading-screen {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+.html-content a:visited {
+  color: #8a7ca8 !important;
 }
 
-.loading-screen h2 {
-  margin-top: 20px;
-  color: white;
-  font-weight: 300;
+.html-content strong {
+  color: #ffffff;
+  font-weight: 600;
 }
 
-/* ...existing sidebar styles... */
+.html-content em {
+  color: #b0b0b0;
+  font-style: italic;
+}
+
+.html-content ul, .html-content ol {
+  margin: 8px 0;
+  padding-left: 20px;
+}
+
+.html-content li {
+  margin: 4px 0;
+  line-height: 1.4;
+}
+
+.html-content img {
+  max-width: 300px;
+  height: auto;
+  border-radius: 8px;
+  margin: 10px 0;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  display: block;
+}
+
+/* Ensure proper spacing between search result sections */
+.html-content h3 + h4 {
+  margin-top: 8px;
+}
+
+.html-content h4 + p {
+  margin-top: 4px;
+}
+
+/* Style for search result links specifically */
+.html-content p a[target="_blank"] {
+  font-weight: 500;
+  padding: 2px 4px;
+  border-radius: 3px;
+  background-color: rgba(74, 158, 255, 0.1);
+  transition: background-color 0.2s ease;
+}
+
+.html-content p a[target="_blank"]:hover {
+  background-color: rgba(74, 158, 255, 0.2);
+}

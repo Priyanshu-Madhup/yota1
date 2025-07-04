@@ -65,10 +65,25 @@ pip install -r requirements.txt
 ```
 
 5. Set up environment variables:
-   - Copy the `.env` file and add your Groq API key:
+   - Copy the `.env.example` file to `.env`:
+   ```bash
+   # Windows
+   copy .env.example .env
+   
+   # macOS/Linux
+   cp .env.example .env
+   ```
+   - Edit the `.env` file and add your actual API keys:
    ```
    GROQ_API_KEY=your_actual_groq_api_key_here
+   COHERE_API_KEY=your_actual_cohere_api_key_here
+   GEMINI_API_KEY=your_actual_gemini_api_key_here
    ```
+   
+   **Important**: 
+   - Get your Groq API key from [Groq Console](https://console.groq.com/)
+   - Get your Cohere API key from [Cohere Platform](https://dashboard.cohere.ai/)
+   - Get your Gemini API key from [Google AI Studio](https://aistudio.google.com/)
 
 6. Run the FastAPI server:
 ```bash
@@ -151,16 +166,25 @@ console.log(data.message); // AI response
 ### Backend (.env)
 ```
 GROQ_API_KEY=your_groq_api_key_here
+COHERE_API_KEY=your_cohere_api_key_here
+GEMINI_API_KEY=your_gemini_api_key_here
 HOST=0.0.0.0
 PORT=8000
 ```
+
+**Required API Keys:**
+- **GROQ_API_KEY**: For chat completions and text generation
+- **COHERE_API_KEY**: For RAG (Retrieval-Augmented Generation) embeddings and context memory
+- **GEMINI_API_KEY**: For image generation, editing, and video analysis features
 
 ## Troubleshooting
 
 ### Common Issues
 
 1. **CORS errors**: Make sure the backend is running on port 8000 and frontend on port 3000
-2. **API key errors**: Verify your Groq API key is correctly set in the `.env` file
+2. **API key errors**: Verify your API keys are correctly set in the `.env` file:
+   - Check that GROQ_API_KEY, COHERE_API_KEY, and GEMINI_API_KEY are all configured
+   - Ensure there are no extra spaces or quotes around the API keys
 3. **Connection refused**: Ensure both servers are running before testing
 
 ### Logs

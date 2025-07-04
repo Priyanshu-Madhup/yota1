@@ -3,43 +3,9 @@ import axios from 'axios';
 import ReactMarkdown from 'react-markdown';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
-import Login from './Login';
 import './App.css';
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
-
-// Axios instance with auth configuration
-const apiClient = axios.create({
-  baseURL: API_BASE_URL,
-});
-
-// Add request interceptor to include auth token
-apiClient.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => {
-    return Promise.reject(error);
-  }
-);
-
-// Add response interceptor to handle auth errors
-apiClient.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    if (error.response?.status === 401) {
-      // Token expired or invalid
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      window.location.reload();
-    }
-    return Promise.reject(error);
-  }
-);
+const API_BASE_URL = 'http://localhost:8000';
 
 // Utility function to convert HTML back to markdown-like format
 const htmlToMarkdown = (html) => {
@@ -66,11 +32,44 @@ const htmlToMarkdown = (html) => {
     .replace(/<strong[^>]*>(.*?)<\/strong>/gi, '**$1**')
     // Convert links
     .replace(/<a[^>]*href="([^"]*)"[^>]*>(.*?)<\/a>/gi, '[$2]($1)')
-    // Remove remaining HTML tags
-    .replace(/<[^>]+>/g, '')
+    // Convert images - preserve them as markdown
+    .replace(/<img[^>]*src="([^"]*)"[^>]*alt="([^"]*)"[^>]*>/gi, '![$2]($1)')
+    .replace(/<img[^>]*src="([^"]*)"[^>]*>/gi, '![Image]($1)')
+    // Remove remaining HTML tags EXCEPT img tags that might not have been converted
+    .replace(/<(?!img\b)[^>]+>/g, '')
     // Clean up extra whitespace
     .replace(/\n\s*\n/g, '\n\n')
     .trim();
+};
+
+// Function to check if content contains HTML that should be rendered as HTML
+const shouldRenderAsHtml = (content) => {
+  if (!content) return false;
+  
+  // Check if content contains img tags, styled divs, complex HTML, or web search results
+  const htmlPatterns = [
+    /<img[^>]*>/i,
+    /<div[^>]*style[^>]*>/i,
+    /data:image\//i,
+    /<h3>.*?🎨.*?Generated Image.*?<\/h3>/i,
+    // Web search patterns
+    /<h3>.*?🔍.*?Search Results.*?<\/h3>/i,
+    /<h3>.*?📚.*?Knowledge Graph.*?<\/h3>/i,
+    /<h3>.*?📰.*?Latest News.*?<\/h3>/i,
+    // General anchor tag pattern (for any content with clickable links)
+    /<a[^>]*href=[^>]*target="_blank"[^>]*>/i,
+    // Pattern for content with multiple HTML elements (likely formatted search results)
+    /<h4>.*?<\/h4>[\s\S]*?<p>.*?<a[^>]*href/i
+  ];
+  
+  const shouldRender = htmlPatterns.some(pattern => pattern.test(content));
+  
+  // Debug logging
+  if (shouldRender) {
+    console.log('� Content should render as HTML (includes links):', content.substring(0, 200) + '...');
+  }
+  
+  return shouldRender;
 };
 
 // Custom components for react-markdown
@@ -130,15 +129,35 @@ const markdownComponents = {
   ),
   
   strong: ({ children }) => <strong className="markdown-strong">{children}</strong>,
+  
+  img: ({ src, alt }) => (
+    <img 
+      src={src} 
+      alt={alt} 
+      className="markdown-img"
+      style={{
+        maxWidth: '100%',
+        height: 'auto',
+        borderRadius: '8px',
+        margin: '10px 0',
+        boxShadow: '0 4px 8px rgba(0, 0, 0, 0.3)',
+        display: 'block'
+      }}
+    />
+  ),
+};
+
+// Global function to download images
+window.downloadImage = (dataUrl, filename) => {
+  const link = document.createElement('a');
+  link.href = dataUrl;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
 };
 
 function App() {
-  // Authentication state
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [user, setUser] = useState(null);
-  const [isLoadingAuth, setIsLoadingAuth] = useState(true);
-  
-  // Existing states
   const [messages, setMessages] = useState([]);
   const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -149,108 +168,20 @@ function App() {
   const [imagePreview, setImagePreview] = useState(null);
   const [webSearchEnabled, setWebSearchEnabled] = useState(false);
   const [imageGenerationEnabled, setImageGenerationEnabled] = useState(false);
+  const [imageEditingEnabled, setImageEditingEnabled] = useState(false);
   const [isGeneratingImage, setIsGeneratingImage] = useState(false);
-  const [lastSavedChatId, setLastSavedChatId] = useState(null);
+  const [editingImage, setEditingImage] = useState(null);
+  const [editingImagePreview, setEditingImagePreview] = useState(null);
+  const [videoAnalysisEnabled, setVideoAnalysisEnabled] = useState(false);
+  const [selectedVideo, setSelectedVideo] = useState(null);
+  const [videoPreview, setVideoPreview] = useState(null);
+  const [isAnalyzingVideo, setIsAnalyzingVideo] = useState(false);
   const messagesEndRef = useRef(null);
   const fileInputRef = useRef(null);
-  const inputRef = useRef(null);
+  const inputRef = useRef(null); // Add ref for input field
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
-
-  // Check authentication on mount
-  useEffect(() => {
-    const checkAuth = async () => {
-      const token = localStorage.getItem('token');
-      const userData = localStorage.getItem('user');
-      
-      if (token && userData) {
-        try {
-          // Verify token is still valid by making an authenticated request
-          await apiClient.get('/profile');
-          setUser(JSON.parse(userData));
-          setIsAuthenticated(true);
-          
-          // Load chat history after authentication
-          await loadChatHistory();
-        } catch (error) {
-          console.error('Token validation failed:', error);
-          localStorage.removeItem('token');
-          localStorage.removeItem('user');
-        }
-      }
-      setIsLoadingAuth(false);
-    };
-    
-    checkAuth();
-  }, []);
-
-  // Load chat history
-  const loadChatHistory = async () => {
-    try {
-      const response = await apiClient.get('/chat-history');
-      if (response.status === 200) {
-        // Backend now handles deduplication, so we can directly use the data
-        setChatHistory(response.data.chats);
-      }
-    } catch (error) {
-      console.error('Error loading chat history:', error);
-    }
-  };
-
-  // Authentication handlers
-  const handleLogin = async (credentials) => {
-    try {
-      const response = await axios.post(`${API_BASE_URL}/login`, credentials);
-      const { access_token, user } = response.data;
-      
-      localStorage.setItem('token', access_token);
-      localStorage.setItem('user', JSON.stringify(user));
-      
-      setUser(user);
-      setIsAuthenticated(true);
-      
-      // Load chat history after login
-      await loadChatHistory();
-      
-      return { success: true };
-    } catch (error) {
-      return { 
-        success: false, 
-        error: error.response?.data?.detail || 'Login failed' 
-      };
-    }
-  };
-
-  const handleRegister = async (userData) => {
-    try {
-      const response = await axios.post(`${API_BASE_URL}/register`, userData);
-      const { access_token, user } = response.data;
-      
-      localStorage.setItem('token', access_token);
-      localStorage.setItem('user', JSON.stringify(user));
-      
-      setUser(user);
-      setIsAuthenticated(true);
-      
-      return { success: true };
-    } catch (error) {
-      return { 
-        success: false, 
-        error: error.response?.data?.detail || 'Registration failed' 
-      };
-    }
-  };
-
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    setUser(null);
-    setIsAuthenticated(false);
-    setMessages([]);
-    setChatHistory([]);
-    setCurrentChatId(null);
   };
 
   useEffect(() => {
@@ -285,22 +216,47 @@ function App() {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // This useEffect is now handled by the authentication check above
+  // Load chat history from backend on mount
+  useEffect(() => {
+    const loadChatHistory = async () => {
+      try {
+        const response = await fetch('http://localhost:8000/chat-history');
+        if (response.ok) {
+          const data = await response.json();
+          setChatHistory(data.chats);
+        }
+      } catch (error) {
+        console.error('Error loading chat history:', error);
+        // Fallback to localStorage
+        const savedHistory = localStorage.getItem('chatHistory');
+        if (savedHistory) {
+          setChatHistory(JSON.parse(savedHistory));
+        }
+      }
+    };
+    
+    loadChatHistory();
+  }, []);
 
   // Save current chat to backend when navigating away
   useEffect(() => {
     const saveCurrentChat = async () => {
-      // Only save if we have messages, a chat ID, and haven't already saved this chat recently
-      if (messages.length > 0 && currentChatId && lastSavedChatId !== currentChatId) {
+      if (messages.length > 0 && currentChatId) {
         try {
           const chatTitle = generateChatTitle(messages.find(m => m.role === 'user')?.content || 'New Chat');
-          await apiClient.post('/save-chat', {
-            chat_id: currentChatId,
-            title: chatTitle,
-            messages: messages
+          await fetch('http://localhost:8000/save-chat', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              chat_id: currentChatId,
+              title: chatTitle,
+              messages: messages
+            })
           });
         } catch (error) {
-          console.error('Error saving chat on unload:', error);
+          console.error('Error saving chat:', error);
         }
       }
     };
@@ -311,17 +267,43 @@ function App() {
 
     window.addEventListener('beforeunload', handleBeforeUnload);
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
-  }, [messages, currentChatId, lastSavedChatId]);
+  }, [messages, currentChatId]);
 
   const generateChatTitle = (firstMessage) => {
     return firstMessage.length > 30 ? firstMessage.substring(0, 30) + '...' : firstMessage;
   };
 
   const startNewChat = async () => {
-    // Start new chat without saving - chats are auto-saved when messages are sent
+    // Save current chat to backend if it has messages
+    if (messages.length > 0 && currentChatId) {
+      try {
+        const chatTitle = generateChatTitle(messages.find(m => m.role === 'user')?.content || 'New Chat');
+        await fetch('http://localhost:8000/save-chat', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            chat_id: currentChatId,
+            title: chatTitle,
+            messages: messages
+          })
+        });
+        
+        // Refresh chat history
+        const response = await fetch('http://localhost:8000/chat-history');
+        if (response.ok) {
+          const data = await response.json();
+          setChatHistory(data.chats);
+        }
+      } catch (error) {
+        console.error('Error saving chat:', error);
+      }
+    }
+    
+    // Start new chat
     setMessages([]);
-    setCurrentChatId(null);  // Will be generated when first message is sent
-    setLastSavedChatId(null); // Reset saved chat tracking
+    setCurrentChatId(Date.now().toString());
     setSidebarOpen(false);
     // Reset toggle states
     setWebSearchEnabled(false);
@@ -338,12 +320,18 @@ function App() {
 
   const loadChat = async (chat) => {
     try {
-      const response = await apiClient.post('/load-chat', {
-        chat_id: chat.id
+      const response = await fetch('http://localhost:8000/load-chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          chat_id: chat.id
+        })
       });
       
-      if (response.status === 200) {
-        const data = response.data;
+      if (response.ok) {
+        const data = await response.json();
         setMessages(data.messages);
         setCurrentChatId(data.chat_id);
         setSidebarOpen(false);
@@ -362,9 +350,11 @@ function App() {
 
   const deleteChat = async (chatId) => {
     try {
-      const response = await apiClient.delete(`/delete-chat/${chatId}`);
+      const response = await fetch(`http://localhost:8000/delete-chat/${chatId}`, {
+        method: 'DELETE',
+      });
       
-      if (response.status === 200) {
+      if (response.ok) {
         setChatHistory(prev => prev.filter(chat => chat.id !== chatId));
         if (currentChatId === chatId) {
           setMessages([]);
@@ -389,9 +379,28 @@ function App() {
     console.log('Image generation toggled:', !imageGenerationEnabled);
   };
 
+  const toggleImageEditing = () => {
+    setImageEditingEnabled(!imageEditingEnabled);
+    console.log('Image editing toggled:', !imageEditingEnabled);
+    // Clear any selected editing image when toggling off
+    if (imageEditingEnabled) {
+      setEditingImage(null);
+      setEditingImagePreview(null);
+    }
+  };
+
+  const toggleVideoAnalysis = () => {
+    setVideoAnalysisEnabled(!videoAnalysisEnabled);
+    console.log('Video analysis toggled:', !videoAnalysisEnabled);
+    // Clear any selected video when toggling off
+    if (videoAnalysisEnabled) {
+      clearVideo();
+    }
+  };
+
   const sendMessage = async (e) => {
     e.preventDefault();
-    if ((!inputMessage.trim() && !selectedImage) || isLoading) return;
+    if ((!inputMessage.trim() && !selectedImage && !editingImage && !selectedVideo) || isLoading) return;
 
     // Generate chat ID if this is a new conversation
     if (!currentChatId) {
@@ -401,22 +410,47 @@ function App() {
     // Store current values before clearing
     const currentImage = selectedImage;
     const currentImagePreview = imagePreview;
+    const currentEditingImage = editingImage;
+    const currentEditingImagePreview = editingImagePreview;
+    const currentVideo = selectedVideo;
+    const currentVideoPreview = videoPreview;
     const currentInputMessage = inputMessage;
 
-    const userMessage = { 
-      role: 'user', 
-      content: currentInputMessage || "Please analyze this image",
-      image: currentImagePreview // Store image for display
-    };
+    // Create user message with appropriate media preview
+    let userMessage;
+    if (videoAnalysisEnabled && currentVideo) {
+      userMessage = { 
+        role: 'user', 
+        content: currentInputMessage || "Analyze this video",
+        video: currentVideoPreview // Store video for display
+      };
+    } else if (imageEditingEnabled && currentEditingImage) {
+      userMessage = { 
+        role: 'user', 
+        content: currentInputMessage || "Edit this image",
+        image: currentEditingImagePreview // Store editing image for display
+      };
+    } else {
+      userMessage = { 
+        role: 'user', 
+        content: currentInputMessage || "Please analyze this image",
+        image: currentImagePreview // Store regular image for display
+      };
+    }
+    
     const newMessages = [...messages, userMessage];
     setMessages(newMessages);
     
-    // Clear input and image immediately after creating the message
+    // Clear input and media immediately after creating the message
     setInputMessage('');
     clearImage();
+    clearEditingImage(); // Also clear editing image
+    clearVideo(); // Also clear video
     
     if (imageGenerationEnabled) {
       setIsGeneratingImage(true);
+    } else if (videoAnalysisEnabled) {
+      setIsAnalyzingVideo(true);
     } else {
       setIsLoading(true);
     }
@@ -424,31 +458,68 @@ function App() {
     try {
       let response;
       
-      console.log('Debug - currentImage:', !!currentImage, 'imageGenerationEnabled:', imageGenerationEnabled, 'webSearchEnabled:', webSearchEnabled);
+      console.log('Debug - currentVideo:', !!currentVideo, 'currentImage:', !!currentImage, 'imageGenerationEnabled:', imageGenerationEnabled, 'videoAnalysisEnabled:', videoAnalysisEnabled, 'webSearchEnabled:', webSearchEnabled);
       
-      if (currentImage) {
+      if (videoAnalysisEnabled && currentVideo) {
+        console.log('Taking video analysis path');
+        // Upload video first
+        const formData = new FormData();
+        formData.append('file', currentVideo);
+        
+        const uploadResponse = await axios.post(`${API_BASE_URL}/upload-video`, formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        });
+        
+        // Use the video analysis endpoint
+        response = await axios.post(`${API_BASE_URL}/analyze-video`, {
+          video_data: uploadResponse.data.video_data,
+          prompt: currentInputMessage || "Analyze and summarize this video in detail.",
+          messages: messages.filter(msg => !msg.image && !msg.video) // Don't send media messages to avoid token limits
+        });
+        
+        console.log('Video analysis completed successfully');
+        // Auto-switch back to normal chat mode after video analysis
+        setVideoAnalysisEnabled(false);
+        console.log('Auto-switched back to normal chat mode after video analysis');
+      } else if (currentImage) {
         console.log('Taking image analysis path');
         // Upload image first
         const formData = new FormData();
         formData.append('file', currentImage);
         
-        const uploadResponse = await apiClient.post('/upload-image', formData, {
+        const uploadResponse = await axios.post(`${API_BASE_URL}/upload-image`, formData, {
           headers: {
             'Content-Type': 'multipart/form-data',
           },
         });
         
         // Use the new chat-with-image endpoint for vision model
-        response = await apiClient.post('/chat-with-image', {
+        response = await axios.post(`${API_BASE_URL}/chat-with-image`, {
           image_data: uploadResponse.data.image_data,
           prompt: currentInputMessage || "Describe what you see in this image in detail.",
           messages: messages.filter(msg => !msg.image) // Don't send image messages to avoid token limits
         });
+      } else if (imageEditingEnabled && currentEditingImage) {
+        console.log('Taking image editing path');
+        // Image editing mode - send the selected editing image along with prompt
+        const promptText = currentInputMessage.trim() || 'Edit this image creatively';
+        response = await axios.post(`${API_BASE_URL}/edit-image`, {
+          image_data: currentEditingImage, // base64 image data
+          prompt: promptText,
+          messages: newMessages.filter(msg => !msg.image) // Don't send image messages to avoid token limits
+        });
+        
+        console.log('Image editing completed successfully');
+        // Auto-switch back to normal chat mode after image editing
+        setImageEditingEnabled(false);
+        console.log('Auto-switched back to normal chat mode after image editing');
       } else if (imageGenerationEnabled) {
         console.log('Taking image generation path');
         // Image generation mode
         const promptText = currentInputMessage.trim() || 'Generate a creative image';
-        response = await apiClient.post('/generate-image', {
+        response = await axios.post(`${API_BASE_URL}/generate-image`, {
           prompt: promptText,
           messages: newMessages.filter(msg => !msg.image) // Don't send image messages to avoid token limits
         });
@@ -469,7 +540,7 @@ function App() {
         }));
         
         console.log('Sending ALL', cleanedMessages.length, 'messages to Groq for complete conversation memory');
-        response = await apiClient.post('/chat', {
+        response = await axios.post(`${API_BASE_URL}/chat`, {
           messages: cleanedMessages,
           model: "llama-3.3-70b-versatile",
           use_web_search: webSearchEnabled
@@ -478,45 +549,40 @@ function App() {
 
       const assistantMessage = { role: 'assistant', content: response.data.message };
       const finalMessages = [...newMessages, assistantMessage];
+      
+      // Debug logging for image generation responses
+      if (imageGenerationEnabled) {
+        console.log('🖼️ Image generation response received:', {
+          contentLength: response.data.message.length,
+          contentPreview: response.data.message.substring(0, 300),
+          containsImg: response.data.message.includes('<img'),
+          containsBase64: response.data.message.includes('data:image')
+        });
+      }
+      
       setMessages(finalMessages);
       
       // Auto-save chat after first AI response (when we have 2+ messages)
       if (finalMessages.length >= 2 && currentChatId) {
         try {
           const chatTitle = generateChatTitle(finalMessages.find(m => m.role === 'user')?.content || 'New Chat');
-          await apiClient.post('/save-chat', {
-            chat_id: currentChatId,
-            title: chatTitle,
-            messages: finalMessages
+          await fetch('http://localhost:8000/save-chat', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              chat_id: currentChatId,
+              title: chatTitle,
+              messages: finalMessages
+            })
           });
           
-          // Mark this chat as saved to prevent duplicate saves
-          setLastSavedChatId(currentChatId);
-          
-          // Check if this chat is already in the sidebar (multiple checks to prevent duplicates)
-          const existingChatById = chatHistory.find(chat => chat.id === currentChatId);
-          const existingChatByTitle = chatHistory.find(chat => chat.title === chatTitle);
-          
-          if (!existingChatById && !existingChatByTitle) {
-            // Add the new chat directly to the chat history without needing a full refresh
-            const newChat = {
-              id: currentChatId,
-              title: chatTitle,
-              timestamp: new Date().toISOString(),
-              message_count: finalMessages.length
-            };
-            
-            // Add to the beginning of the chat history (most recent first)
-            setChatHistory(prev => {
-              // Double-check for duplicates in the existing array before adding
-              const hasExistingId = prev.some(chat => chat.id === currentChatId);
-              const hasExistingTitle = prev.some(chat => chat.title === chatTitle);
-              
-              if (!hasExistingId && !hasExistingTitle) {
-                return [newChat, ...prev];
-              }
-              return prev; // Return unchanged if duplicate found
-            });
+          // Refresh chat history to show the new chat immediately
+          const historyResponse = await fetch('http://localhost:8000/chat-history');
+          if (historyResponse.ok) {
+            const data = await historyResponse.json();
+            setChatHistory(data.chats);
           }
         } catch (error) {
           console.error('Error auto-saving chat:', error);
@@ -538,10 +604,36 @@ function App() {
       const finalMessages = [...newMessages, errorMessage];
       setMessages(finalMessages);
       
-      // Don't auto-save on error - let the beforeunload handler save if needed
+      // Auto-save chat even on error if it's the first response
+      if (finalMessages.length >= 2 && currentChatId) {
+        try {
+          const chatTitle = generateChatTitle(finalMessages.find(m => m.role === 'user')?.content || 'New Chat');
+          await fetch('http://localhost:8000/save-chat', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              chat_id: currentChatId,
+              title: chatTitle,
+              messages: finalMessages
+            })
+          });
+          
+          // Refresh chat history
+          const historyResponse = await fetch('http://localhost:8000/chat-history');
+          if (historyResponse.ok) {
+            const data = await historyResponse.json();
+            setChatHistory(data.chats);
+          }
+        } catch (saveError) {
+          console.error('Error auto-saving chat:', saveError);
+        }
+      }
     } finally {
       setIsLoading(false);
       setIsGeneratingImage(false);
+      setIsAnalyzingVideo(false);
       
       // Auto-focus input field after message is sent
       setTimeout(() => {
@@ -566,8 +658,19 @@ function App() {
           setImagePreview(e.target.result);
         };
         reader.readAsDataURL(file);
+        // Clear video selection if any
+        clearVideo();
+      } else if (file.type.startsWith('video/')) {
+        setSelectedVideo(file);
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          setVideoPreview(e.target.result);
+        };
+        reader.readAsDataURL(file);
+        // Clear image selection if any
+        clearImage();
       } else {
-        alert('Please select an image file');
+        alert('Please select an image or video file');
       }
     }
   };
@@ -578,6 +681,37 @@ function App() {
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
+  };
+
+  const clearVideo = () => {
+    setSelectedVideo(null);
+    setVideoPreview(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const handleEditingImageUpload = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      if (file.type.startsWith('image/')) {
+        // Convert to base64 for editing
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const base64Data = e.target.result.split(',')[1]; // Remove data:image/png;base64, prefix
+          setEditingImage(base64Data);
+          setEditingImagePreview(e.target.result);
+        };
+        reader.readAsDataURL(file);
+      } else {
+        alert('Please select an image file for editing');
+      }
+    }
+  };
+
+  const clearEditingImage = () => {
+    setEditingImage(null);
+    setEditingImagePreview(null);
   };
 
   const openFileDialog = () => {
@@ -605,39 +739,11 @@ function App() {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Show loading screen while checking authentication
-  if (isLoadingAuth) {
-    return (
-      <div className="App">
-        <div className="loading-screen">
-          <img src="./yota_logo.png" alt="Yota Logo" className="welcome-yota-logo" />
-          <h2>Loading...</h2>
-        </div>
-      </div>
-    );
-  }
-
-  // Show login screen if not authenticated
-  if (!isAuthenticated) {
-    return <Login onLogin={handleLogin} onRegister={handleRegister} />;
-  }
-
   return (
     <div className="App">
       {/* Sidebar */}
       <div className={`sidebar ${sidebarOpen ? 'sidebar-open' : ''}`}>
         <div className="sidebar-header">
-          <div className="user-info">
-            <span className="user-name">Welcome, {user?.username}!</span>
-            <button onClick={handleLogout} className="logout-btn">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
-                <polyline points="16,17 21,12 16,7"/>
-                <path d="M21 12H9"/>
-              </svg>
-              Logout
-            </button>
-          </div>
           <button onClick={startNewChat} className="new-chat-btn">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M12 5v14M5 12h14"/>
@@ -725,13 +831,25 @@ function App() {
                       <img src={message.image} alt="User uploaded" />
                     </div>
                   )}
+                  {message.video && (
+                    <div className="message-video">
+                      <video src={message.video} controls style={{ maxWidth: '300px', height: 'auto' }} />
+                    </div>
+                  )}
                   <div className="message-text">
                     {message.role === 'assistant' ? (
-                      <ReactMarkdown 
-                        components={markdownComponents}
-                      >
-                        {htmlToMarkdown(message.content)}
-                      </ReactMarkdown>
+                      shouldRenderAsHtml(message.content) ? (
+                        <div 
+                          className="html-content"
+                          dangerouslySetInnerHTML={{ __html: message.content }}
+                        />
+                      ) : (
+                        <ReactMarkdown 
+                          components={markdownComponents}
+                        >
+                          {htmlToMarkdown(message.content)}
+                        </ReactMarkdown>
+                      )
                     ) : (
                       <ReactMarkdown 
                         components={markdownComponents}
@@ -744,11 +862,12 @@ function App() {
               </div>
             ))}
             
-            {(isLoading || isGeneratingImage) && (
+            {(isLoading || isGeneratingImage || isAnalyzingVideo) && (
               <div className="message assistant">
                 <div className="message-content">
                   <p className="typing">
-                    {isGeneratingImage ? 'Crafting your image...' : 'Thinking...'}
+                    {isGeneratingImage ? 'Crafting your image...' : 
+                     isAnalyzingVideo ? 'Analyzing your video...' : 'Thinking...'}
                   </p>
                 </div>
               </div>
@@ -762,7 +881,7 @@ function App() {
               type="file"
               ref={fileInputRef}
               onChange={handleImageUpload}
-              accept="image/*"
+              accept="image/*,video/*"
               style={{ display: 'none' }}
             />
             
@@ -775,6 +894,52 @@ function App() {
                     <line x1="6" y1="6" x2="18" y2="18"/>
                   </svg>
                 </button>
+              </div>
+            )}
+
+            {videoPreview && (
+              <div className="video-preview">
+                <video src={videoPreview} controls style={{ maxWidth: '150px', maxHeight: '150px' }} />
+                <button type="button" onClick={clearVideo} className="remove-video-btn">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <line x1="18" y1="6" x2="6" y2="18"/>
+                    <line x1="6" y1="6" x2="18" y2="18"/>
+                  </svg>
+                </button>
+              </div>
+            )}
+
+            {/* Image Editing Section */}
+            {imageEditingEnabled && (
+              <div className="image-editing-section">
+                <div className="editing-controls">
+                  <label className="edit-image-upload-btn">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                      <circle cx="8.5" cy="8.5" r="1.5"/>
+                      <polyline points="21,15 16,10 5,21"/>
+                    </svg>
+                    Select Image to Edit
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleEditingImageUpload}
+                      style={{ display: 'none' }}
+                    />
+                  </label>
+                </div>
+
+                {editingImagePreview && (
+                  <div className="editing-image-preview">
+                    <img src={editingImagePreview} alt="Image to Edit" />
+                    <button type="button" onClick={clearEditingImage} className="remove-image-btn">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <line x1="18" y1="6" x2="6" y2="18"/>
+                        <line x1="6" y1="6" x2="18" y2="18"/>
+                      </svg>
+                    </button>
+                  </div>
+                )}
               </div>
             )}
             
@@ -790,7 +955,14 @@ function App() {
                 type="text"
                 value={inputMessage}
                 onChange={(e) => setInputMessage(e.target.value)}
-                placeholder={selectedImage ? "Describe what you want to know about this image..." : "How can Yota help?"}
+                placeholder={
+                  selectedVideo ? "Describe what you want to know about this video..." :
+                  selectedImage ? "Describe what you want to know about this image..." :
+                  imageEditingEnabled && editingImage ? "Describe how you want to edit this image..." :
+                  imageGenerationEnabled ? "Describe the image you want to generate..." :
+                  videoAnalysisEnabled ? "Upload a video to analyze..." :
+                  "How can Yota help?"
+                }
                 disabled={isLoading}
                 className="message-input"
               />
@@ -833,7 +1005,45 @@ function App() {
                   )}
                 </button>
                 
-                <button type="submit" disabled={isLoading || isGeneratingImage || (!inputMessage.trim() && !selectedImage)} className="send-btn">
+                <button 
+                  type="button" 
+                  className={`input-action-btn think-btn ${imageEditingEnabled ? 'web-search-active' : ''}`}
+                  onClick={toggleImageEditing}
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                    <path d="M12 8v8M8 12h8"/>
+                    <path d="M3 12a9 9 0 1 0 18 0 9 9 0 1 0-18 0"/>
+                  </svg>
+                  Edit Images
+                  {imageEditingEnabled && (
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M20 6L9 17l-5-5"/>
+                    </svg>
+                  )}
+                </button>
+                
+                <button 
+                  type="button" 
+                  className={`input-action-btn think-btn ${videoAnalysisEnabled ? 'web-search-active' : ''}`}
+                  onClick={toggleVideoAnalysis}
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <polygon points="23 7 16 12 23 17 23 7"/>
+                    <rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
+                  </svg>
+                  Analyze Video
+                  {videoAnalysisEnabled && (
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M20 6L9 17l-5-5"/>
+                    </svg>
+                  )}
+                </button>
+                
+                <button type="submit" disabled={
+                  isLoading || isGeneratingImage || isAnalyzingVideo || 
+                  (!inputMessage.trim() && !selectedImage && !selectedVideo && !(imageEditingEnabled && editingImage))
+                } className="send-btn">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/>
                   </svg>

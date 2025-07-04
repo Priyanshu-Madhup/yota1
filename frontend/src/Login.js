@@ -100,14 +100,17 @@ function Login({ onLogin, onRegister }) {
   return (
     <div className="login-container">
       <div className="login-background">
-        {/* Floating Yota AI Text Background */}
-        <div className="login-floating-text">
-          <div className="floating-yota-main">YOTA AI</div>
-          <div className="floating-yota-secondary">AI Assistant</div>
-          <div className="floating-message-1">Intelligent Conversations</div>
-          <div className="floating-message-2">Future of AI Chat</div>
-          <div className="floating-message-3">Powered by Intelligence</div>
-        </div>
+        {/* Additional Background Logos */}
+        <img src="./yota_logo.png" alt="" className="background-logo-1" />
+        <img src="./yota_logo.png" alt="" className="background-logo-2" />
+        <img src="./yota_logo.png" alt="" className="background-logo-3" />
+        <img src="./yota_logo.png" alt="" className="background-logo-4" />
+        <img src="./yota_logo.png" alt="" className="background-logo-5" />
+        <img src="./yota_logo.png" alt="" className="background-logo-6" />
+        <img src="./yota_logo.png" alt="" className="background-logo-7" />
+        <img src="./yota_logo.png" alt="" className="background-logo-8" />
+        <img src="./yota_logo.png" alt="" className="background-logo-9" />
+        <img src="./yota_logo.png" alt="" className="background-logo-10" />
 
         <div className="login-card">
           {/* Header with Yota Logo */}

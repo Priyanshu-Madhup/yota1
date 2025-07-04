@@ -1,51 +1,64 @@
 /* Login Page Styles - Matching Yota App Theme */
 
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+}
+
 .login-container {
-  width: 100vw;
-  height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: #1a1a1a;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
-  overflow: hidden;
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    overflow: hidden;
 }
 
 .login-background {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: linear-gradient(135deg, #1a1a1a 0%, #171717 50%, #1a1a1a 100%);
-  overflow: hidden;
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #2d1b69 0%, #11101d 50%, #1a0b34 100%);
+    overflow: hidden;
 }
 
 /* Animated background elements */
 .login-background::before {
-  content: '';
-  position: absolute;
-  top: -50%;
-  left: -50%;
-  width: 200%;
-  height: 200%;
-  background: radial-gradient(circle, rgba(102, 126, 234, 0.1) 0%, transparent 70%);
-  animation: rotate 20s linear infinite;
-  z-index: 1;
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(102, 126, 234, 0.1) 0%, transparent 70%);
+    animation: rotate 20s linear infinite;
+    z-index: 1;
 }
 
 .login-background::after {
-  content: '';
-  position: absolute;
-  top: 20%;
-  right: 10%;
-  width: 300px;
-  height: 300px;
-  background: radial-gradient(circle, rgba(102, 126, 234, 0.05) 0%, transparent 70%);
-  border-radius: 50%;
-  animation: float 8s ease-in-out infinite;
-  z-index: 1;
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 600px;
+    height: 600px;
+    background-image: url('./yota_logo.png');
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    opacity: 0.1;
+    z-index: 1;
+    animation: logoFloat 8s ease-in-out infinite;
 }
 
 /* Floating Yota AI Text Background */
@@ -92,51 +105,6 @@
   opacity: 0.08;
   animation: floatUpSecondary 12s ease-in-out infinite;
   letter-spacing: 4px;
-}
-
-.floating-message-1 {
-  position: absolute;
-  top: 25%;
-  left: 15%;
-  font-size: clamp(20px, 3vw, 35px);
-  font-weight: 600;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  background-clip: text;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  opacity: 0.12;
-  animation: riseUp1 10s ease-in-out infinite;
-  transform: rotate(-8deg);
-}
-
-.floating-message-2 {
-  position: absolute;
-  bottom: 30%;
-  left: 8%;
-  font-size: clamp(18px, 2.5vw, 30px);
-  font-weight: 500;
-  background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
-  background-clip: text;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  opacity: 0.1;
-  animation: riseUp2 14s ease-in-out infinite;
-  transform: rotate(5deg);
-}
-
-.floating-message-3 {
-  position: absolute;
-  top: 40%;
-  right: 8%;
-  font-size: clamp(16px, 2vw, 28px);
-  font-weight: 600;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  background-clip: text;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  opacity: 0.09;
-  animation: riseUp3 11s ease-in-out infinite;
-  transform: rotate(12deg);
 }
 
 /* Floating animations */
@@ -550,4 +518,285 @@
 
 .input-container input:focus-visible {
   outline: none; /* Already handled by border and box-shadow */
+}
+
+/* Background Logos */
+.background-logo-1 {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 400px;
+  height: 400px;
+  opacity: 0.15;
+  z-index: 1;
+  pointer-events: none;
+  animation: logoFloat 8s ease-in-out infinite;
+  object-fit: contain;
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+}
+
+.background-logo-2 {
+  position: fixed;
+  top: -10%;
+  right: -10%;
+  width: 300px;
+  height: 300px;
+  opacity: 0.08;
+  z-index: 1;
+  pointer-events: none;
+  transform: rotate(25deg);
+  animation: logoFloat2 12s ease-in-out infinite;
+  object-fit: contain;
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+}
+
+.background-logo-3 {
+  position: fixed;
+  bottom: -5%;
+  left: -5%;
+  width: 250px;
+  height: 250px;
+  opacity: 0.1;
+  z-index: 1;
+  pointer-events: none;
+  transform: rotate(-15deg);
+  animation: logoFloat3 10s ease-in-out infinite reverse;
+  object-fit: contain;
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+}
+
+.background-logo-4 {
+  position: fixed;
+  top: 60%;
+  right: -8%;
+  width: 200px;
+  height: 200px;
+  opacity: 0.06;
+  z-index: 1;
+  pointer-events: none;
+  transform: rotate(45deg);
+  animation: logoFloat4 15s ease-in-out infinite;
+  object-fit: contain;
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+}
+
+.background-logo-5 {
+  position: fixed;
+  top: -15%;
+  left: 10%;
+  width: 280px;
+  height: 280px;
+  opacity: 0.05;
+  z-index: 1;
+  pointer-events: none;
+  transform: rotate(-30deg);
+  animation: logoFloat5 18s ease-in-out infinite;
+  object-fit: contain;
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+}
+
+.background-logo-6 {
+  position: fixed;
+  top: 10%;
+  left: 60%;
+  width: 180px;
+  height: 180px;
+  opacity: 0.07;
+  z-index: 1;
+  pointer-events: none;
+  transform: rotate(60deg);
+  animation: logoFloat6 14s ease-in-out infinite;
+  object-fit: contain;
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+}
+
+.background-logo-7 {
+  position: fixed;
+  bottom: 20%;
+  right: 20%;
+  width: 220px;
+  height: 220px;
+  opacity: 0.04;
+  z-index: 1;
+  pointer-events: none;
+  transform: rotate(-45deg);
+  animation: logoFloat7 16s ease-in-out infinite reverse;
+  object-fit: contain;
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+}
+
+.background-logo-8 {
+  position: fixed;
+  top: 40%;
+  left: -12%;
+  width: 320px;
+  height: 320px;
+  opacity: 0.06;
+  z-index: 1;
+  pointer-events: none;
+  transform: rotate(90deg);
+  animation: logoFloat8 20s ease-in-out infinite;
+  object-fit: contain;
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+}
+
+.background-logo-9 {
+  position: fixed;
+  top: 75%;
+  left: 25%;
+  width: 160px;
+  height: 160px;
+  opacity: 0.08;
+  z-index: 1;
+  pointer-events: none;
+  transform: rotate(15deg);
+  animation: logoFloat9 11s ease-in-out infinite;
+  object-fit: contain;
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+}
+
+.background-logo-10 {
+  position: fixed;
+  top: 45%;
+  left: 15%;
+  width: 240px;
+  height: 240px;
+  opacity: 0.09;
+  z-index: 1;
+  pointer-events: none;
+  transform: rotate(-20deg);
+  animation: logoFloat10 13s ease-in-out infinite;
+  object-fit: contain;
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+}
+
+/* Additional Logo Float Animations */
+@keyframes logoFloat2 {
+  0%, 100% { 
+    transform: rotate(25deg) translateY(0px) scale(1); 
+    opacity: 0.08;
+  }
+  50% { 
+    transform: rotate(25deg) translateY(-20px) scale(1.05); 
+    opacity: 0.12;
+  }
+}
+
+@keyframes logoFloat3 {
+  0%, 100% { 
+    transform: rotate(-15deg) translateY(0px) translateX(0px); 
+    opacity: 0.1;
+  }
+  33% { 
+    transform: rotate(-15deg) translateY(-15px) translateX(10px); 
+    opacity: 0.15;
+  }
+  66% { 
+    transform: rotate(-15deg) translateY(10px) translateX(-5px); 
+    opacity: 0.08;
+  }
+}
+
+@keyframes logoFloat4 {
+  0%, 100% { 
+    transform: rotate(45deg) translateY(0px) scale(1); 
+    opacity: 0.06;
+  }
+  50% { 
+    transform: rotate(45deg) translateY(-25px) scale(0.95); 
+    opacity: 0.1;
+  }
+}
+
+@keyframes logoFloat5 {
+  0%, 100% { 
+    transform: rotate(-30deg) translateY(0px) translateX(0px) scale(1); 
+    opacity: 0.05;
+  }
+  25% { 
+    transform: rotate(-30deg) translateY(-20px) translateX(15px) scale(1.1); 
+    opacity: 0.08;
+  }
+  75% { 
+    transform: rotate(-30deg) translateY(15px) translateX(-10px) scale(0.9); 
+    opacity: 0.03;
+  }
+}
+
+@keyframes logoFloat6 {
+  0%, 100% { 
+    transform: rotate(60deg) translateY(0px) scale(1); 
+    opacity: 0.07;
+  }
+  50% { 
+    transform: rotate(60deg) translateY(-18px) scale(1.08); 
+    opacity: 0.11;
+  }
+}
+
+@keyframes logoFloat7 {
+  0%, 100% { 
+    transform: rotate(-45deg) translateY(0px) translateX(0px); 
+    opacity: 0.04;
+  }
+  33% { 
+    transform: rotate(-45deg) translateY(-22px) translateX(12px); 
+    opacity: 0.07;
+  }
+  66% { 
+    transform: rotate(-45deg) translateY(18px) translateX(-8px); 
+    opacity: 0.02;
+  }
+}
+
+@keyframes logoFloat8 {
+  0%, 100% { 
+    transform: rotate(90deg) translateY(0px) scale(1); 
+    opacity: 0.06;
+  }
+  25% { 
+    transform: rotate(90deg) translateY(-25px) scale(1.05); 
+    opacity: 0.09;
+  }
+  75% { 
+    transform: rotate(90deg) translateY(20px) scale(0.95); 
+    opacity: 0.04;
+  }
+}
+
+@keyframes logoFloat9 {
+  0%, 100% { 
+    transform: rotate(15deg) translateY(0px) translateX(0px) scale(1); 
+    opacity: 0.08;
+  }
+  50% { 
+    transform: rotate(15deg) translateY(-16px) translateX(8px) scale(1.12); 
+    opacity: 0.12;
+  }
+}
+
+@keyframes logoFloat10 {
+  0%, 100% { 
+    transform: rotate(-20deg) translateY(0px) translateX(0px) scale(1); 
+    opacity: 0.09;
+  }
+  33% { 
+    transform: rotate(-20deg) translateY(-18px) translateX(12px) scale(1.05); 
+    opacity: 0.13;
+  }
+  66% { 
+    transform: rotate(-20deg) translateY(12px) translateX(-8px) scale(0.95); 
+    opacity: 0.06;
+  }
 }
