@@ -828,7 +828,7 @@ function App() {
                 <div className="message-content">
                   {message.image && (
                     <div className="message-image">
-                      <img src={message.image} alt="User uploaded" />
+                      <img src={message.image} alt="Uploaded content" />
                     </div>
                   )}
                   {message.video && (
@@ -931,7 +931,7 @@ function App() {
 
                 {editingImagePreview && (
                   <div className="editing-image-preview">
-                    <img src={editingImagePreview} alt="Image to Edit" />
+                    <img src={editingImagePreview} alt="Preview for editing" />
                     <button type="button" onClick={clearEditingImage} className="remove-image-btn">
                       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                         <line x1="18" y1="6" x2="6" y2="18"/>
